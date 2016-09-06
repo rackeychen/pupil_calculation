@@ -1,0 +1,124 @@
+﻿<html>
+    <head>
+    <style>
+        *{
+            font-family: 'Courier New','Microsoft Yahei', sans-serif;
+        }
+        #space {
+            font-size: 24;
+        }
+    </style>
+    <script>
+            function GetRandomNum(Min, Max) {
+                var Range = Max - Min;
+                var Rand = Math.random();
+                return (Min + Math.round(Rand * Range));
+            }
+
+            //we suppose num1 always > num2
+            function generateOp(num1, num2) {
+                var op = "+";
+                var unit1 = num1 % 10;
+                var unit2 = num2 % 10;
+
+                var tens1 = num1 / 10;
+                var tens2 = num2 / 10;
+
+                if ((unit1 < unit2)) {
+                    op = "-";
+                    return op;
+                }
+
+                if ((unit1 + unit2) > 10 || (tens1 + tens2 > 10)) {
+                    op = "+";
+                    return op;
+                } else {
+
+                    return "empty";
+                }
+
+            }
+
+            function GenerateItems() {
+                var num1 = GetRandomNum(10, 99);
+                var num2 = GetRandomNum(10, 99);
+                var op = "";
+
+                if (num1 > num2) {
+                    op = generateOp(num1, num2);
+                    return num1.toString() + op + num2.toString() + "=";
+                } else if (num1 < num2) {
+                    op = generateOp(num2, num1);
+                    return num2.toString() + op + num1.toString() + "=";
+                } else { //equal case
+                    return "empty";
+                }
+            }
+            function createItems(num) {
+                var i = 0;
+                
+                var parent = document.getElementById("space");
+                var results = [];
+                //remove the childs of parent;
+                if(parent.childNodes.length !== 0) {
+                    var length = parent.childNodes.length;
+                    for(var i = 0; i < length; i ++) {
+                        parent.removeChild(parent.firstChild);
+                    }
+                }
+                
+                while (1) {
+                    if (results.length === num) {
+                         drawItems(results, parent);  
+                        return true;
+                    }
+                    var result = GenerateItems();
+                    console.log("my items is " + result);
+                    if (result.indexOf("empty") !== -1) {
+                        continue;
+                    }
+                    results.push(result);
+                }
+                
+             
+            }
+            
+            function drawItems(array, parentNode) {
+                var nums = array.length;
+                var baseTop = 0;
+                var leftPos = -50;
+                for(var i = 0; i < nums; i ++) {
+                    var element = document.createElement("p");
+                    element.innerHTML = array[i];
+/*
+                    if(i % 5 == 0 && i !== 0) {
+                        baseTop = (i / 5) * 50;
+                        leftPos = 0; 
+                        element.style.display = "inline";
+                    } else { 
+                        leftPos = leftPos + 70;
+                        element.style.display = "inline";
+                    }
+*/                    
+                    element.style.display = "inline-block";
+                    element.style.marginRight = 70;
+                    //element.style.marginTop = baseTop;
+                    parentNode.appendChild(element);
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div style="margin-left: 350px; font-size:32px; font-weight: bold;" onclick="createItems(50);">口算练习题</div>
+        <div style="margin-top:50px">
+            <div style="display: inline; margin-left: 130px; font-size:26px; font-weight:bold;">班级</div>
+            <div style="display: inline; margin-left: 160px; font-size:26px; font-weight:bold">姓名</div> 
+            <div style="display: inline; margin-left: 180px; font-size:26px; font-weight:bold">日期</div> 
+        </div>
+        <div id="space" style="width :800px; overflow-x: auto; height:auto; margin-left: 80px;margin-top:60px;">    
+        </div>
+        <div style="display:none;">
+            第一版只是生成两位数带进退位的加减法。
+        </div>
+    </body>
+</html>
