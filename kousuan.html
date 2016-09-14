@@ -9,6 +9,8 @@
         }
     </style>
     <script>
+            var complicatedQuestions = 0; 
+            
             function GetRandomNum(Min, Max) {
                 var Range = Max - Min;
                 var Rand = Math.random();
@@ -29,11 +31,14 @@
                     return op;
                 }
 
-                if ((unit1 + unit2) > 10 || (tens1 + tens2 > 10)) {
+                if ((tens1 + tens2) > 10 && (complicatedQuestions < 5)) {
+                    op = "+";
+                    complicatedQuestions += 1;
+                    return op;
+                } else if(unit1 + unit2 > 10 && (tens1 + tens2) < 10) {
                     op = "+";
                     return op;
-                } else {
-
+                }else {
                     return "empty";
                 }
 
