@@ -8,8 +8,12 @@
             font-size: 24;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
     <script>
             var complicatedQuestions = 0; 
+            var multipleCount = 10;
+            var multipleQuestions = 0;
+            var results = [];
             
             function GetRandomNum(Min, Max) {
                 var Range = Max - Min;
@@ -25,28 +29,32 @@
 
                 var tens1 = num1 / 10;
                 var tens2 = num2 / 10;
-
+                
                 if ((unit1 < unit2)) {
                     op = "-";
                     return op;
                 }
-
-                if ((tens1 + tens2) > 10 && (complicatedQuestions < 5)) {
+                
+                if(num1 < 10 && num2 < 10) {
+                    op = "X";
+                    multipleQuestions +=1;
+                    return op;
+                } else if ((tens1 + tens2) > 10 && (complicatedQuestions < 10)) {
                     op = "+";
                     complicatedQuestions += 1;
                     return op;
                 } else if(unit1 + unit2 > 10 && (tens1 + tens2) < 10) {
                     op = "+";
                     return op;
-                }else {
+                } else {
                     return "empty";
                 }
 
             }
 
             function GenerateItems() {
-                var num1 = GetRandomNum(10, 99);
-                var num2 = GetRandomNum(10, 99);
+                var num1 = GetRandomNum(1, 99);
+                var num2 = GetRandomNum(1, 99);
                 var op = "";
 
                 if (num1 > num2) {
@@ -59,11 +67,10 @@
                     return "empty";
                 }
             }
-            function createItems(num) {
+            function createItems(num, complicatedQuestionsCount) {
                 var i = 0;
                 
                 var parent = document.getElementById("space");
-                var results = [];
                 //remove the childs of parent;
                 if(parent.childNodes.length !== 0) {
                     var length = parent.childNodes.length;
@@ -72,8 +79,11 @@
                     }
                 }
                 
+                complicatedQuestions = 0;
+                multipleQuestions = 0;
+                results = [];
                 while (1) {
-                    if (results.length === num) {
+                    if ((results.length === num) /*&& (complicatedQuestions === complicatedQuestionsCount)*/) {
                          drawItems(results, parent);  
                         return true;
                     }
@@ -84,8 +94,6 @@
                     }
                     results.push(result);
                 }
-                
-             
             }
             
             function drawItems(array, parentNode) {
@@ -94,34 +102,72 @@
                 var leftPos = -50;
                 for(var i = 0; i < nums; i ++) {
                     var element = document.createElement("p");
-                    element.innerHTML = array[i];
-/*
-                    if(i % 5 == 0 && i !== 0) {
-                        baseTop = (i / 5) * 50;
-                        leftPos = 0; 
-                        element.style.display = "inline";
-                    } else { 
-                        leftPos = leftPos + 70;
-                        element.style.display = "inline";
-                    }
-*/                    
+                    element.innerHTML = array[i];                   
                     element.style.display = "inline-block";
                     element.style.marginRight = 70;
-                    //element.style.marginTop = baseTop;
+                    element.style.width = 100;
                     parentNode.appendChild(element);
+                }
+            }
+            
+            function exportToPDF(doc, days) {
+               
+                var x = 20, y = 10;
+                doc.setFontSize(30);
+                var numDay = days + 1;
+                var title = "Day " + numDay + " Exercises";
+                var subTitle = "Name :                                Classes:                             Scores:          ";
+                doc.setFontStyle("bold");
+                doc.text(title, 70, 20);
+                
+                doc.setFontStyle("normal");
+                doc.setFontSize(16);
+                
+                doc.text(subTitle, 20, 40);
+                y = 50;
+                for(var i = 0; i < results.length; i ++) {
+                    if(i % 5 === 0) {
+                        y += 15;
+                        x = 5;
+                    } else {
+                        x = (i % 5) * 40 + 10;
+                        
+                    }
+                    doc.text(results[i], x, y);
+                }
+                //doc.text(results, 10, 10);
+                return doc;
+            };
+            
+            function createDaysExercises(days, numberPerDay, complicatedQuestions) {
+                var finalResults = [];
+                var pdfDoc = null;
+                for(var i = 0; i < days; i ++) {
+                    if(pdfDoc !== null) {
+                        pdfDoc.addPage();
+                    } else {
+                        pdfDoc = new jsPDF();
+                    }
+                    createItems(numberPerDay, complicatedQuestions);
+                    pdfDoc = exportToPDF(pdfDoc, i);
+                   
+                }
+                if(pdfDoc !== null) {
+                    pdfDoc.save("a4.pdf");
                 }
             }
         </script>
     </head>
     <body>
-        <div style="margin-left: 350px; font-size:32px; font-weight: bold;" onclick="createItems(50);">口算练习题</div>
+        <div style="margin-left: 350px; font-size:32px; font-weight: bold;" onclick="createDaysExercises(7, 50, 7)">口算练习题</div>
         <div style="margin-top:50px">
             <div style="display: inline; margin-left: 130px; font-size:26px; font-weight:bold;">班级</div>
             <div style="display: inline; margin-left: 160px; font-size:26px; font-weight:bold">姓名</div> 
-            <div style="display: inline; margin-left: 180px; font-size:26px; font-weight:bold">日期</div> 
+            <div style="display: inline; margin-left: 180px; font-size:26px; font-weight:bold">成绩</div> 
         </div>
         <div id="space" style="width :800px; overflow-x: auto; height:auto; margin-left: 80px;margin-top:60px;">    
         </div>
+        <button onclick="exportToPDF(1);">输出至PDF</button>
         <div style="display:none;">
             第一版只是生成两位数带进退位的加减法。
         </div>
